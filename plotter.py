@@ -87,7 +87,7 @@ class Plotter:
 
         plt.xlabel("Predicted probability")
         plt.ylabel("Count")
-        #plt.yscale('log')
+        plt.yscale('log')
         plt.title("Probability distribution")
         plt.legend()
         plt.tight_layout()
