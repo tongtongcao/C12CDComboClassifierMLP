@@ -87,7 +87,7 @@ class Plotter:
 
         plt.xlabel("Predicted probability")
         plt.ylabel("Count")
-        plt.yscale('log')
+        #plt.yscale('log')
         plt.title("Probability distribution")
         plt.legend()
         plt.tight_layout()
@@ -131,7 +131,7 @@ class Plotter:
         plt.plot(thresholds, tnr_list, label='TNR', color='red', linewidth=2)
         plt.xlabel("Threshold")
         plt.ylabel("Rate")
-        plt.yscale('log')
+        #plt.yscale('log')
         plt.ylim(0, 1.0)
         plt.title("TPR/TNR vs Threshold")
         plt.grid(True)
