@@ -6,11 +6,12 @@ from pytorch_lightning.callbacks import Callback
 
 class comboClassifierMLP(pl.LightningModule):
 
-    def __init__(self, input_dim=39, hidden_dim=64, num_layers=3, lr=1e-3, dropout=0.1):
+    def __init__(self, input_dim=39, hidden_dim=64, num_layers=3, lr=1e-3, dropout=0.1, pos_weight=1):
         super().__init__()
 
         self.save_hyperparameters()
         self.lr = lr
+        self.pos_weight = pos_weight
 
         # Backbone
         layers = []
@@ -29,7 +30,7 @@ class comboClassifierMLP(pl.LightningModule):
         self.classifier = nn.Linear(hidden_dim, 1)
 
         # Output is a probability after sigmoid
-        self.criterion = nn.BCELoss()
+        self.criterion = nn.BCELoss(reduction='none')
 
     """
         Parameters
@@ -50,22 +51,31 @@ class comboClassifierMLP(pl.LightningModule):
 
         return probability
 
+    # --------------------------------------------------
+    # Loss
+    # --------------------------------------------------
+    def compute_loss(self, y_hat, y):
+        y_hat = y_hat.reshape(-1)
+        y = y.float().reshape(-1)
+        loss = self.criterion(y_hat, y)
+        weights = torch.where(y == 1, torch.full_like(y, self.pos_weight), torch.ones_like(y))
+
+        return (loss * weights).mean()
+
     def training_step(self, batch, batch_idx):
         x_cont, labels = batch
         labels = labels.float().view(-1, 1)
         probability = self(x_cont)
-        loss = self.criterion(probability, labels)
+        loss = self.compute_loss(probability, labels)
         self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
-
         return loss
 
     def validation_step(self, batch, batch_idx):
         x_cont, labels = batch
         labels = labels.float().view(-1, 1)
         probability = self(x_cont)
-        loss = self.criterion(probability, labels)
+        loss = self.compute_loss(probability, labels)
         self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
-
         return loss
 
     def configure_optimizers(self):

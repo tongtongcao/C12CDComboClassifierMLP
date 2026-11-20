@@ -155,6 +155,14 @@ def main():
     val_features = features_all[val_idx]
     val_labels = labels_all[val_idx]
 
+    # Calculate pos_weight using training samples only
+    train_labels = labels_all[train_idx]
+    num_pos = (train_labels == 1).sum().item()
+    num_neg = (train_labels == 0).sum().item()
+    if num_pos == 0:
+        raise ValueError("No positive samples in training set.")
+    pos_weight = num_neg / num_pos
+
     # Paths
     norm_stats_out_path = os.path.join(outDir, "norm_stats.json")
     BASE_DIR = Path(__file__).resolve().parent
@@ -276,7 +284,8 @@ def main():
         hidden_dim=args.hidden_dim,
         num_layers=args.num_layers,
         lr=args.lr,
-        dropout=args.dropout
+        dropout=args.dropout,
+        pos_weight=pos_weight
     )
 
     # Loss tracker
