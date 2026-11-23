@@ -6,7 +6,7 @@ from pytorch_lightning.callbacks import Callback
 
 class comboClassifierMLP(pl.LightningModule):
 
-    def __init__(self, input_dim=39, hidden_dim=512, num_layers=3, lr=1e-3, dropout=0.1, pos_weight=1):
+    def __init__(self, input_dim, hidden_dim=512, num_layers=3, lr=1e-3, dropout=0.1, pos_weight=1):
         super().__init__()
 
         self.save_hyperparameters()
